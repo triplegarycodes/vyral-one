@@ -1,0 +1,11 @@
+{
+  "name": "vyral-one",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@8.15.4",
+  "scripts": {
+    "lint": "pnpm --filter vyral lint",
+    "typecheck": "pnpm --filter vyral typecheck",
+    "start": "pnpm --filter vyral start"
+  }
+}
