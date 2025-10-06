@@ -1,7 +1,7 @@
 import React from "react";
 import Svg, { Circle } from "react-native-svg";
 import { View, Text } from "react-native";
-import { colors } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 
 interface ProgressProps {
   size?: number;
@@ -14,8 +14,10 @@ export const ProgressRing: React.FC<ProgressProps> = ({
   size = 160,
   progress,
   label,
-  accentColor = colors.neon.blue
+  accentColor
 }) => {
+  const { colors } = useThemeTokens();
+  const resolvedAccent = accentColor ?? colors.neon.primary;
   const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -33,7 +35,7 @@ export const ProgressRing: React.FC<ProgressProps> = ({
           r={radius}
         />
         <Circle
-          stroke={accentColor}
+          stroke={resolvedAccent}
           fill="transparent"
           strokeLinecap="round"
           strokeWidth={strokeWidth}

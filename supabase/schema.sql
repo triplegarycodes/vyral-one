@@ -7,6 +7,7 @@ create table if not exists users (
   email text unique not null,
   avatar_url text,
   xp int default 0,
+  points int default 0,
   created_at timestamptz default now()
 );
 

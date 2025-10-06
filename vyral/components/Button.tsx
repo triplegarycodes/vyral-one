@@ -1,7 +1,8 @@
 import React from "react";
 import { Pressable, PressableProps, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { colors, timing } from "@/theme/tokens";
+import { timing } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 import { clsx } from "clsx";
 
 type ButtonProps = {
@@ -19,15 +20,17 @@ export const Button: React.FC<ButtonProps> = ({
   label,
   onPress,
   variant = "primary",
-  accentColor = colors.neon.blue,
+  accentColor,
   disabled,
   icon,
   className,
   pressableProps
 }) => {
+  const { colors } = useThemeTokens();
+  const resolvedAccent = accentColor ?? colors.neon.primary;
   const gradientColors =
     variant === "primary"
-      ? [accentColor, colors.neon.purple]
+      ? [resolvedAccent, colors.neon.secondary]
       : ["rgba(255,255,255,0.08)", "rgba(255,255,255,0.02)"];
 
   return (
@@ -40,7 +43,7 @@ export const Button: React.FC<ButtonProps> = ({
         className
       )}
       style={{
-        shadowColor: accentColor,
+        shadowColor: resolvedAccent,
         shadowOpacity: 0.45,
         shadowRadius: 12,
         shadowOffset: { width: 0, height: 0 },

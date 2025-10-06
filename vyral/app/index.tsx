@@ -2,12 +2,13 @@ import React, { useEffect } from "react";
 import { View, Text, Image } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { Button } from "@/components/Button";
-import { colors } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 import { useSupabase } from "@/lib/supabase";
 
 const OnboardingScreen: React.FC = () => {
   const router = useRouter();
   const { session } = useSupabase();
+  const { colors } = useThemeTokens();
 
   useEffect(() => {
     if (session) {
@@ -36,12 +37,12 @@ const OnboardingScreen: React.FC = () => {
         <Button
           label="Login"
           onPress={() => router.push("/auth/login")}
-          accentColor={colors.neon.blue}
+          accentColor={colors.neon.primary}
         />
         <Button
           label="Create Account"
           onPress={() => router.push("/auth/signup")}
-          accentColor={colors.neon.purple}
+          accentColor={colors.neon.secondary}
         />
       </View>
       <Link

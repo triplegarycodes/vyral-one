@@ -6,13 +6,14 @@ import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { FAB } from "@/components/FAB";
-import { moduleAccents } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 
 const LyfeScreen: React.FC = () => {
   const { client, session } = useSupabase();
   const queryClient = useQueryClient();
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState("");
+  const { moduleAccents } = useThemeTokens();
 
   const habitsQuery = useQuery({
     queryKey: ["habits", session?.user.id],

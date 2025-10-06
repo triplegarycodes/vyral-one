@@ -3,11 +3,11 @@ import { View, Text, ScrollView, Alert } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/Button";
 import { ProgressRing } from "@/components/Progress";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 import { moduleAccents } from "@/theme/tokens";
 import { useSupabase } from "@/lib/supabase";
 import { useUserStore } from "@/store/useUserStore";
 import { awardXp, calculateFocusSessionXp } from "@/lib/xp";
-
 const focusDurations = [15, 25, 45];
 
 type FocusSession = {
@@ -25,6 +25,7 @@ const ZoneScreen: React.FC = () => {
   const [selectedDuration, setSelectedDuration] = useState(25);
   const [secondsLeft, setSecondsLeft] = useState(selectedDuration * 60);
   const [active, setActive] = useState(false);
+  const { moduleAccents } = useThemeTokens();
   const plannedSecondsRef = useRef(selectedDuration * 60);
 
   const { data: recentSessions, isLoading: sessionsLoading } = useQuery<FocusSession[]>({
@@ -248,7 +249,7 @@ const ZoneScreen: React.FC = () => {
             <Button
               label={`${duration}m`}
               onPress={() => onSelect(duration)}
-              accentColor={duration === selectedDuration ? moduleAccents.zone : "rgba(255,255,255,0.3)"}
+              accentColor={duration === selectedDuration ? moduleAccents.zone : undefined}
               variant={duration === selectedDuration ? "primary" : "secondary"}
             />
           </View>

@@ -1,5 +1,5 @@
-insert into users (username, email, avatar_url)
-values ('gary', 'gary@example.com', 'https://i.pravatar.cc/150?img=1')
+insert into users (username, email, avatar_url, points)
+values ('gary', 'gary@example.com', 'https://i.pravatar.cc/150?img=1', 600)
 on conflict (email) do nothing;
 
 insert into challenges (title, description, xp_reward) values
