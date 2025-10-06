@@ -1,4 +1,4 @@
-# Vyral Monorepo
+# Vyral
 
 Vyral is the flagship experience inside the future V’erse suite. This monorepo hosts a TypeScript-first Expo application with modular architecture so each module can graduate into its own mini-app.
 
