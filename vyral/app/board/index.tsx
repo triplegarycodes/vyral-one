@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
-import { moduleAccents } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 
 const columns = [
   { key: "todo", title: "To Do" },
@@ -19,6 +19,7 @@ const BoardScreen: React.FC = () => {
   const { client, session } = useSupabase();
   const queryClient = useQueryClient();
   const [taskTitle, setTaskTitle] = useState("");
+  const { moduleAccents } = useThemeTokens();
 
   const tasksQuery = useQuery({
     queryKey: ["tasks", session?.user.id],

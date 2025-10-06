@@ -43,6 +43,13 @@ supabase db push --file supabase/schema.sql
 supabase db push --file supabase/seed.sql
 ```
 
+## Rewards & Points
+
+- Player currency lives on `users.points`. The bootstrap hook hydrates it into the `useUserStore` profile so UI modules can read a live balance.
+- Award points whenever you grant XP (e.g. finishing a challenge, logging a habit) by incrementing `users.points` in the same Supabase mutation that updates XP.
+- The Shop checks the cached balance before unlocking a theme. When a purchase succeeds it atomically deducts the cost, equips the theme, and refreshes both the customization query and the user store.
+- Seeds grant the demo account 600 pts so you can immediately test unlock flows.
+
 ## Project Structure
 
 ```

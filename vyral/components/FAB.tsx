@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { colors } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 
 interface FABProps {
   label: string;
@@ -10,15 +10,18 @@ interface FABProps {
   accentColor?: string;
 }
 
-export const FAB: React.FC<FABProps> = ({ label, onPress, icon, accentColor = colors.neon.purple }) => {
+export const FAB: React.FC<FABProps> = ({ label, onPress, icon, accentColor }) => {
+  const { colors } = useThemeTokens();
+  const resolvedAccent = accentColor ?? colors.neon.secondary;
+
   return (
     <Pressable
       onPress={onPress}
       className="absolute bottom-8 right-6 flex-row items-center overflow-hidden rounded-full"
-      style={{ shadowColor: accentColor, shadowOpacity: 0.45, shadowRadius: 20, elevation: 8 }}
+      style={{ shadowColor: resolvedAccent, shadowOpacity: 0.45, shadowRadius: 20, elevation: 8 }}
     >
       <LinearGradient
-        colors={[accentColor, colors.neon.blue]}
+        colors={[resolvedAccent, colors.neon.primary]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ paddingVertical: 14, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", gap: 8 }}

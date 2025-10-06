@@ -5,7 +5,7 @@ import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { useSupabase } from "@/lib/supabase";
 import { z } from "zod";
-import { colors } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 import { FontAwesome } from "@expo/vector-icons";
 
 const loginSchema = z.object({
@@ -18,6 +18,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 const LoginScreen: React.FC = () => {
   const router = useRouter();
   const { client } = useSupabase();
+  const { colors } = useThemeTokens();
   const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -80,7 +81,7 @@ const LoginScreen: React.FC = () => {
           <Button
             label="Google"
             onPress={() => signInWithProvider("google")}
-            accentColor={colors.neon.blue}
+            accentColor={colors.neon.primary}
             icon={<FontAwesome name="google" size={18} color="#0a0f1e" />}
           />
         </View>
@@ -88,7 +89,7 @@ const LoginScreen: React.FC = () => {
           <Button
             label="Apple"
             onPress={() => signInWithProvider("apple")}
-            accentColor={colors.neon.purple}
+            accentColor={colors.neon.secondary}
             icon={<FontAwesome name="apple" size={18} color="#0a0f1e" />}
           />
         </View>

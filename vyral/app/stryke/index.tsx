@@ -3,13 +3,14 @@ import { View, Text, ScrollView, Alert, Pressable } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSupabase } from "@/lib/supabase";
 import { Card } from "@/components/Card";
-import { moduleAccents } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 import { useUserStore } from "@/store/useUserStore";
 
 const StrykeScreen: React.FC = () => {
   const { client, session } = useSupabase();
   const profile = useUserStore((state) => state.profile);
   const queryClient = useQueryClient();
+  const { moduleAccents } = useThemeTokens();
 
   const { data: challenges } = useQuery({
     queryKey: ["challenges"],

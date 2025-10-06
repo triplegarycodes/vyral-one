@@ -3,13 +3,15 @@ import { View, Text, ScrollView, Pressable } from "react-native";
 import { useUserStore } from "@/store/useUserStore";
 import { Avatar } from "@/components/Avatar";
 import { ProgressRing } from "@/components/Progress";
-import { colors, moduleAccents } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 import { Link } from "expo-router";
 import { Card } from "@/components/Card";
 
 const KorScreen: React.FC = () => {
   const profile = useUserStore((state) => state.profile);
+  const { moduleAccents, colors } = useThemeTokens();
   const xp = profile?.xp ?? 0;
+  const points = profile?.points ?? 0;
   const level = Math.floor(xp / 1000) + 1;
   const progress = Math.min((xp % 1000) / 1000, 1);
 
@@ -33,10 +35,10 @@ const KorScreen: React.FC = () => {
         Hey {profile?.username ?? "Explorer"}
       </Text>
       <Text className="mt-2 text-base text-white/70" style={{ fontFamily: "Inter_400Regular" }}>
-        Level {level} • {xp} XP
+        Level {level} • {xp} XP • {points} pts
       </Text>
       <View className="mt-8 items-center">
-        <ProgressRing progress={progress} label="Next level" accentColor={colors.neon.blue} />
+        <ProgressRing progress={progress} label="Next level" accentColor={colors.neon.primary} />
         <View className="-mt-36">
           <Avatar uri={profile?.avatar_url ?? undefined} size={120} />
         </View>

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { Button } from "@/components/Button";
 import { ProgressRing } from "@/components/Progress";
-import { moduleAccents } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 
 const focusDurations = [15, 25, 45];
 
@@ -10,6 +10,7 @@ const ZoneScreen: React.FC = () => {
   const [selectedDuration, setSelectedDuration] = useState(25);
   const [secondsLeft, setSecondsLeft] = useState(selectedDuration * 60);
   const [active, setActive] = useState(false);
+  const { moduleAccents } = useThemeTokens();
 
   useEffect(() => {
     if (!active) return;
@@ -69,7 +70,7 @@ const ZoneScreen: React.FC = () => {
             <Button
               label={`${duration}m`}
               onPress={() => onSelect(duration)}
-              accentColor={duration === selectedDuration ? moduleAccents.zone : "rgba(255,255,255,0.3)"}
+              accentColor={duration === selectedDuration ? moduleAccents.zone : undefined}
               variant={duration === selectedDuration ? "primary" : "secondary"}
             />
           </View>
