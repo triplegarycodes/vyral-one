@@ -1,4 +1,3 @@
--- Schema for Vyral Supabase backend
 create extension if not exists "uuid-ossp";
 
 create table if not exists users (
@@ -7,6 +6,7 @@ create table if not exists users (
   email text unique not null,
   avatar_url text,
   xp int default 0,
+  points int default 0,
   created_at timestamptz default now()
 );
 
@@ -44,6 +44,7 @@ create table if not exists entries (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references users(id) on delete cascade not null,
   content text,
+  summary text,
   created_at timestamptz default now()
 );
 
@@ -123,3 +124,10 @@ begin
   return coalesce(new_xp, 0);
 end;
 $$;
+  duration_seconds int not null,
+  earned_xp int not null,
+  was_cancelled boolean default false,
+  completed_at timestamptz default now()
+);
+
+create index if not exists focus_sessions_user_completed_idx on focus_sessions(user_id, completed_at desc);

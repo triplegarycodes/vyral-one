@@ -15,9 +15,9 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 const RootProviders: React.FC<React.PropsWithChildren> = ({ children }) => {
   useUserBootstrap();
   return (
-    <ThemeProvider>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>{children}</ThemeProvider>
+    </QueryClientProvider>
   );
 };
 

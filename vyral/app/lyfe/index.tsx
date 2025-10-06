@@ -11,12 +11,15 @@ import { useUserStore } from "@/store/useUserStore";
 
 const HABIT_XP_REWARD = 15;
 
+import { useThemeTokens } from "@/theme/ThemeProvider";
+
 const LyfeScreen: React.FC = () => {
   const { client, session } = useSupabase();
   const queryClient = useQueryClient();
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState("");
   const updateXP = useUserStore((state) => state.updateXP);
+  const { moduleAccents } = useThemeTokens();
 
   const habitsQuery = useQuery({
     queryKey: ["habits", session?.user.id],

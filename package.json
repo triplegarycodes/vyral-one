@@ -6,6 +6,10 @@
   "scripts": {
     "lint": "pnpm --filter vyral lint",
     "typecheck": "pnpm --filter vyral typecheck",
-    "start": "pnpm --filter vyral start"
+    "start": "pnpm --filter vyral start",
+    "test": "TS_NODE_PROJECT=vyral/tsconfig.json node --loader ts-node/esm --test tests/invokeSummarizeEntry.test.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
   }
 }

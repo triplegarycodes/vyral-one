@@ -1,22 +1,34 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { View, Text, ScrollView, TextInput, Alert } from "react-native";
 import { useSupabase } from "@/lib/supabase";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { moduleAccents } from "@/theme/tokens";
+import { invokeSummarizeEntry, SummarizeEntryError } from "@/lib/summaries";
+
+type Entry = {
+  id: string;
+  content: string;
+  created_at: string;
+  summary: string | null;
+};
+=======
+import { useThemeTokens } from "@/theme/ThemeProvider";
 
 const SkrybeScreen: React.FC = () => {
   const { client, session } = useSupabase();
   const queryClient = useQueryClient();
   const [content, setContent] = useState("");
+  const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
 
+  const { moduleAccents, colors } = useThemeTokens();
   const entriesQuery = useQuery({
     queryKey: ["entries", session?.user.id],
     queryFn: async () => {
       const { data, error } = await client
         .from("entries")
-        .select("id, content, created_at")
+        .select("id, content, created_at, summary")
         .eq("user_id", session!.user.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -24,6 +36,33 @@ const SkrybeScreen: React.FC = () => {
     },
     enabled: Boolean(session)
   });
+
+  const summarizeEntryMutation = useMutation({
+    mutationFn: async (entryId: string) => {
+      setActiveEntryId(entryId);
+      return await invokeSummarizeEntry(client, entryId);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["entries", session?.user.id] });
+    },
+    onError: (error) => {
+      if (error instanceof SummarizeEntryError || error instanceof Error) {
+        Alert.alert("Unable to summarize", error.message);
+      } else {
+        Alert.alert("Unable to summarize", "Please try again later.");
+      }
+    },
+    onSettled: () => setActiveEntryId(null)
+  });
+
+  const summarizeEntryState = useMemo(() => {
+    return {
+      isLoading: summarizeEntryMutation.isPending,
+      activeId: activeEntryId,
+      lastVariables: summarizeEntryMutation.variables,
+      error: summarizeEntryMutation.error
+    };
+  }, [summarizeEntryMutation.error, summarizeEntryMutation.isPending, summarizeEntryMutation.variables, activeEntryId]);
 
   const createEntry = useMutation({
     mutationFn: async () => {
@@ -70,11 +109,11 @@ const SkrybeScreen: React.FC = () => {
           value={content}
           onChangeText={setContent}
           placeholder="Stream your consciousness..."
-          placeholderTextColor="rgba(255,255,255,0.5)"
+          placeholderTextColor={colors.text.secondary}
           style={{
             minHeight: 150,
             fontFamily: "Inter_400Regular",
-            color: "#fff",
+            color: colors.text.primary,
             textAlignVertical: "top"
           }}
         />
@@ -85,18 +124,53 @@ const SkrybeScreen: React.FC = () => {
           disabled={createEntry.isPending}
         />
         <Text className="mt-4 text-xs text-white/50" style={{ fontFamily: "Inter_400Regular" }}>
-          AI synthesis arriving soon.
+          Use the AI summary below each entry to quickly recap your thoughts.
         </Text>
       </Card>
       <View className="mt-10" style={{ rowGap: 16 }}>
-        {entriesQuery.data?.map((entry) => (
-          <Card key={entry.id} accentColor={moduleAccents.skrybe} className="p-4">
+        {(entriesQuery.data as Entry[] | undefined)?.map((entry) => (
+          <Card key={entry.id} accentColor={moduleAccents.skrybe} className="p-4" style={{ rowGap: 12 }}>
             <Text className="text-xs text-white/50" style={{ fontFamily: "Inter_400Regular" }}>
               {new Date(entry.created_at).toLocaleString()}
             </Text>
             <Text className="mt-2 text-base text-white" style={{ fontFamily: "Inter_400Regular" }}>
               {entry.content}
             </Text>
+            <View style={{ rowGap: 8 }}>
+              <Button
+                label={
+                  summarizeEntryState.isLoading && summarizeEntryState.activeId === entry.id
+                    ? "Summarizing..."
+                    : entry.summary
+                      ? "Refresh summary"
+                      : "Generate summary"
+                }
+                onPress={() => summarizeEntryMutation.mutate(entry.id)}
+                accentColor={moduleAccents.skrybe}
+                disabled={summarizeEntryState.isLoading && summarizeEntryState.activeId === entry.id}
+              />
+              <View className="rounded-md bg-white/5 p-3">
+                {summarizeEntryState.isLoading && summarizeEntryState.activeId === entry.id ? (
+                  <Text className="text-sm text-white/70" style={{ fontFamily: "Inter_400Regular" }}>
+                    Crafting your recap...
+                  </Text>
+                ) : summarizeEntryMutation.isError && summarizeEntryState.lastVariables === entry.id ? (
+                  <Text className="text-sm text-red-300" style={{ fontFamily: "Inter_400Regular" }}>
+                    {summarizeEntryMutation.error instanceof Error
+                      ? summarizeEntryMutation.error.message
+                      : "Something went wrong."}
+                  </Text>
+                ) : entry.summary ? (
+                  <Text className="text-sm text-white" style={{ fontFamily: "Inter_400Regular" }}>
+                    {entry.summary}
+                  </Text>
+                ) : (
+                  <Text className="text-sm text-white/60" style={{ fontFamily: "Inter_400Regular" }}>
+                    No summary yet. Generate one to see the highlights.
+                  </Text>
+                )}
+              </View>
+            </View>
           </Card>
         ))}
       </View>

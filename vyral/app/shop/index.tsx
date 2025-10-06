@@ -2,11 +2,14 @@ import React from "react";
 import { View, Text, ScrollView, Alert } from "react-native";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
-import { moduleAccents } from "@/theme/tokens";
 import { useSupabase } from "@/lib/supabase";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCustomizationQuery, customizationQueryKey } from "@/lib/useCustomizationQuery";
+import { useThemeTokens } from "@/theme/ThemeProvider";
+import { ThemeId } from "@/theme/tokens";
+import { useUserStore } from "@/store/useUserStore";
 
-const shopItems = [
+const shopItems: { id: ThemeId; title: string; description: string; cost: number }[] = [
   { id: "nebula", title: "Nebula Trail", description: "Animated star trail theme", cost: 400 },
   { id: "cyber", title: "Cyber Bloom", description: "Neon petals swirl aura", cost: 250 },
   { id: "aurora", title: "Aurora Drift", description: "Dynamic teal gradient", cost: 150 }
@@ -15,35 +18,48 @@ const shopItems = [
 const ShopScreen: React.FC = () => {
   const { client, session } = useSupabase();
   const queryClient = useQueryClient();
+  const { moduleAccents } = useThemeTokens();
+  const customizationQuery = useCustomizationQuery();
+  const profile = useUserStore((state) => state.profile);
+  const updatePoints = useUserStore((state) => state.updatePoints);
+  const setTheme = useUserStore((state) => state.setTheme);
 
-  const customizationQuery = useQuery({
-    queryKey: ["customizations", session?.user.id],
-    queryFn: async () => {
-      const { data, error } = await client
-        .from("customizations")
-        .select("id, theme, avatar_url")
-        .eq("user_id", session!.user.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-    enabled: Boolean(session)
-  });
+  const balance = profile?.points ?? 0;
+  const activeTheme = customizationQuery.data?.theme ?? profile?.theme ?? "default";
 
   const purchaseMutation = useMutation({
-    mutationFn: async (theme: string) => {
+    mutationFn: async (item: (typeof shopItems)[number]) => {
       if (!session) throw new Error("Login required");
-      const { error } = await client
+      const currentBalance = profile?.points ?? 0;
+      if (currentBalance < item.cost) {
+        throw new Error("Not enough points to unlock this theme");
+      }
+
+      const { data: updatedUser, error: pointsError } = await client
+        .from("users")
+        .update({ points: currentBalance - item.cost })
+        .eq("id", session.user.id)
+        .select("points")
+        .single();
+
+      if (pointsError) throw pointsError;
+
+      const { error: customizationError } = await client
         .from("customizations")
-        .upsert({ user_id: session.user.id, theme })
+        .upsert({ user_id: session.user.id, theme: item.id })
         .select();
-      if (error) throw error;
+
+      if (customizationError) throw customizationError;
+
+      return { points: updatedUser.points, theme: item.id };
     },
-    onSuccess: async () => {
+    onSuccess: async (result, item) => {
+      updatePoints(result.points ?? balance - item.cost);
+      setTheme(item.id);
       Alert.alert("Unlocked!", "Your new vibe is active in Vyra.");
-      await queryClient.invalidateQueries({ queryKey: ["customizations", session?.user.id] });
+      await queryClient.invalidateQueries({ queryKey: customizationQueryKey(session?.user.id) });
     },
-    onError: (error) => Alert.alert("Unable to purchase", error.message)
+    onError: (error: Error) => Alert.alert("Unable to purchase", error.message)
   });
 
   if (!session) {
@@ -64,9 +80,12 @@ const ShopScreen: React.FC = () => {
       <Text className="mt-2 text-base text-white/70" style={{ fontFamily: "Inter_400Regular" }}>
         Spend points to unlock neon cosmetics.
       </Text>
+      <Text className="mt-4 text-sm text-white/60" style={{ fontFamily: "Inter_600SemiBold" }}>
+        Balance: {balance} pts
+      </Text>
       <View className="mt-8" style={{ rowGap: 16 }}>
         {shopItems.map((item) => {
-          const isActive = customizationQuery.data?.theme === item.id;
+          const isActive = activeTheme === item.id;
           return (
             <Card key={item.id} accentColor={moduleAccents.shop} className="p-4">
               <Text className="text-xl text-white" style={{ fontFamily: "SpaceGrotesk_500Medium" }}>
@@ -79,8 +98,8 @@ const ShopScreen: React.FC = () => {
                 {item.cost} pts
               </Text>
               <Button
-                label={isActive ? "Equipped" : "Unlock"}
-                onPress={() => purchaseMutation.mutate(item.id)}
+                label={isActive ? "Equipped" : `Unlock (${item.cost} pts)`}
+                onPress={() => purchaseMutation.mutate(item)}
                 accentColor={moduleAccents.shop}
                 disabled={isActive || purchaseMutation.isPending}
               />
