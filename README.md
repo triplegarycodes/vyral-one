@@ -34,6 +34,32 @@ EXPO_PUBLIC_SUPABASE_URL=your-url
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
+### AI Summaries
+
+The Skrybe module can generate AI summaries for each journal entry via a Supabase Edge Function.
+
+1. Provision the secrets the function needs in your Supabase project:
+
+   ```bash
+   supabase secrets set OPENAI_API_KEY=sk-... \
+     SUPABASE_URL=https://your-project.supabase.co \
+     SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   ```
+
+2. Deploy the edge function:
+
+   ```bash
+   supabase functions deploy summarize-entry --project-ref <project-ref>
+   ```
+
+3. Call the function locally (optional) with the Supabase CLI to verify connectivity:
+
+   ```bash
+   supabase functions invoke summarize-entry --no-verify-jwt --body '{"entryId":"<uuid>"}'
+   ```
+
+The edge function reads the entry content, requests a concise summary from your configured LLM provider (OpenAI by default), stores it back into the `entries.summary` column, and returns the generated text to the client.
+
 ### Database
 
 Run the provided SQL to bootstrap the Supabase backend.
@@ -41,6 +67,12 @@ Run the provided SQL to bootstrap the Supabase backend.
 ```bash
 supabase db push --file supabase/schema.sql
 supabase db push --file supabase/seed.sql
+```
+
+Run the automated checks (including the summary service mock tests):
+
+```bash
+pnpm test
 ```
 
 ## Project Structure

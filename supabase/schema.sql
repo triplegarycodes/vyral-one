@@ -36,6 +36,7 @@ create table if not exists entries (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references users(id) on delete cascade not null,
   content text,
+  summary text,
   created_at timestamptz default now()
 );
 
