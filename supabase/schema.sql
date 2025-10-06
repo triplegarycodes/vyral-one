@@ -62,3 +62,14 @@ create table if not exists customizations (
   avatar_url text,
   created_at timestamptz default now()
 );
+
+create table if not exists focus_sessions (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid references users(id) on delete cascade not null,
+  duration_seconds int not null,
+  earned_xp int not null,
+  was_cancelled boolean default false,
+  completed_at timestamptz default now()
+);
+
+create index if not exists focus_sessions_user_completed_idx on focus_sessions(user_id, completed_at desc);
