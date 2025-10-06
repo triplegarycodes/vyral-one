@@ -1,15 +1,55 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, Alert } from "react-native";
 import { Button } from "@/components/Button";
 import { ProgressRing } from "@/components/Progress";
 import { moduleAccents } from "@/theme/tokens";
+import { useSupabase } from "@/lib/supabase";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useUserStore } from "@/store/useUserStore";
 
 const focusDurations = [15, 25, 45];
+const FOCUS_XP_PER_MINUTE = 4;
 
 const ZoneScreen: React.FC = () => {
   const [selectedDuration, setSelectedDuration] = useState(25);
   const [secondsLeft, setSecondsLeft] = useState(selectedDuration * 60);
   const [active, setActive] = useState(false);
+  const { client, session } = useSupabase();
+  const queryClient = useQueryClient();
+  const updateXP = useUserStore((state) => state.updateXP);
+
+  const { mutate: logFocusSession } = useMutation({
+    mutationFn: async (durationMinutes: number) => {
+      if (!session) throw new Error("Sign in to log focus sessions");
+
+      const { error: insertError } = await client
+        .from("focus_sessions")
+        .insert({ user_id: session.user.id, duration_minutes: durationMinutes });
+
+      if (insertError) throw insertError;
+
+      const xpAward = durationMinutes * FOCUS_XP_PER_MINUTE;
+
+      const { data: xpValue, error: xpError } = await client.rpc("grant_xp", {
+        p_user_id: session.user.id,
+        p_amount: xpAward,
+        p_source: "focus_session",
+        p_metadata: { duration_minutes: durationMinutes }
+      });
+
+      if (xpError) throw xpError;
+
+      return { xp: xpValue ?? 0, xpAward };
+    },
+    onSuccess: async ({ xp, xpAward }) => {
+      updateXP(xp);
+      await queryClient.invalidateQueries({ queryKey: ["profile", session?.user.id] });
+      Alert.alert("Focus complete", `You earned +${xpAward} XP for staying in the zone.`);
+    },
+    onError: (error) => {
+      Alert.alert("Unable to log session", error.message);
+    }
+  });
 
   useEffect(() => {
     if (!active) return;
@@ -22,8 +62,9 @@ const ZoneScreen: React.FC = () => {
   useEffect(() => {
     if (secondsLeft === 0 && active) {
       setActive(false);
+      logFocusSession(selectedDuration);
     }
-  }, [secondsLeft, active]);
+  }, [secondsLeft, active, logFocusSession, selectedDuration]);
 
   const progress = useMemo(() => secondsLeft / (selectedDuration * 60), [secondsLeft, selectedDuration]);
 

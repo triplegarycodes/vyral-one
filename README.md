@@ -43,6 +43,19 @@ supabase db push --file supabase/schema.sql
 supabase db push --file supabase/seed.sql
 ```
 
+### XP System
+
+Kor levels are powered by the `users.xp` column. XP is awarded via the `grant_xp` stored procedure, which records a row in
+`xp_transactions` before incrementing the running total. Current earn events include:
+
+- **Challenge enlistment (Stryke):** Joining a challenge logs a `challenge_participants` record and grants the challenge’s
+  `xp_reward` value.
+- **Habit log (Lyfe):** Each tap of “Log again” adds a `habit_logs` entry and rewards **15 XP**.
+- **Focus session (Zone):** Completing a timer session inserts into `focus_sessions` and grants **4 XP per minute** focused.
+
+These inserts keep Kor’s dashboard and streaks in sync thanks to React Query cache invalidations and the global
+`useUserStore` profile update helpers.
+
 ## Project Structure
 
 ```
