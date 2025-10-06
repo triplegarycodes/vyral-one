@@ -9,6 +9,7 @@ import { useUserStore } from "@/store/useUserStore";
 const StrykeScreen: React.FC = () => {
   const { client, session } = useSupabase();
   const profile = useUserStore((state) => state.profile);
+  const updateXP = useUserStore((state) => state.updateXP);
   const queryClient = useQueryClient();
   const { moduleAccents } = useThemeTokens();
 
@@ -37,20 +38,51 @@ const StrykeScreen: React.FC = () => {
   });
 
   const joinMutation = useMutation({
-    mutationFn: async (challengeId: string) => {
+    mutationFn: async ({ challengeId, xpReward }: { challengeId: string; xpReward: number }) => {
       if (!session) throw new Error("No session");
       const { error } = await client
         .from("streaks")
         .upsert({ user_id: session.user.id, count: (streak?.count ?? 0) + 1 })
         .select();
       if (error) throw error;
+      const { data: participation, error: participationError } = await client
+        .from("challenge_participants")
+        .insert({ challenge_id: challengeId, user_id: session.user.id })
+        .select("id")
+        .maybeSingle();
+      if (participationError) {
+        if (participationError.code === "23505") {
+          throw new Error("You've already joined this challenge.");
+        }
+        throw participationError;
+      }
+      if (!participation) {
+        throw new Error("Unable to record participation");
+      }
+
       await client
         .from("posts")
         .insert({ user_id: session.user.id, content: `Joined challenge ${challengeId}` });
+
+      const { data: xpValue, error: xpError } = await client.rpc("grant_xp", {
+        p_user_id: session.user.id,
+        p_amount: xpReward,
+        p_source: "challenge_join",
+        p_metadata: { challenge_id: challengeId }
+      });
+
+      if (xpError) throw xpError;
+
+      return { xp: xpValue ?? 0, xpAward: xpReward };
     },
-    onSuccess: async () => {
+    onSuccess: async ({ xp, xpAward }) => {
+      updateXP(xp);
       await queryClient.invalidateQueries({ queryKey: ["streak", session?.user.id] });
-      Alert.alert("Streak boosted", "You joined the mission. Stay consistent!");
+      await queryClient.invalidateQueries({ queryKey: ["profile", session?.user.id] });
+      Alert.alert(
+        "Streak boosted",
+        `You joined the mission and earned +${xpAward} XP. Stay consistent!`
+      );
     },
     onError: (error) => {
       Alert.alert("Action failed", error.message);
@@ -88,7 +120,12 @@ const StrykeScreen: React.FC = () => {
               XP reward: {challenge.xp_reward}
             </Text>
             <Pressable
-              onPress={() => joinMutation.mutate(challenge.id)}
+              onPress={() =>
+                joinMutation.mutate({
+                  challengeId: challenge.id,
+                  xpReward: challenge.xp_reward ?? 0
+                })
+              }
               className="mt-4 self-start rounded-full border border-white/20 px-4 py-2"
             >
               <Text className="text-sm text-white" style={{ fontFamily: "Inter_600SemiBold" }}>

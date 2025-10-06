@@ -6,6 +6,11 @@ import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { FAB } from "@/components/FAB";
+import { moduleAccents } from "@/theme/tokens";
+import { useUserStore } from "@/store/useUserStore";
+
+const HABIT_XP_REWARD = 15;
+
 import { useThemeTokens } from "@/theme/ThemeProvider";
 
 const LyfeScreen: React.FC = () => {
@@ -13,6 +18,7 @@ const LyfeScreen: React.FC = () => {
   const queryClient = useQueryClient();
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState("");
+  const updateXP = useUserStore((state) => state.updateXP);
   const { moduleAccents } = useThemeTokens();
 
   const habitsQuery = useQuery({
@@ -48,15 +54,35 @@ const LyfeScreen: React.FC = () => {
 
   const incrementHabit = useMutation({
     mutationFn: async (habitId: string) => {
+      if (!session) throw new Error("Sign in to log habits");
       const habit = habitsQuery.data?.find((item) => item.id === habitId);
       const { error } = await client
         .from("habits")
         .update({ value: (habit?.value ?? 0) + 1 })
         .eq("id", habitId);
       if (error) throw error;
+
+      const { error: logError } = await client
+        .from("habit_logs")
+        .insert({ habit_id: habitId, user_id: session.user.id });
+      if (logError) throw logError;
+
+      const { data: xpValue, error: xpError } = await client.rpc("grant_xp", {
+        p_user_id: session.user.id,
+        p_amount: HABIT_XP_REWARD,
+        p_source: "habit_log",
+        p_metadata: { habit_id: habitId }
+      });
+
+      if (xpError) throw xpError;
+
+      return { xp: xpValue ?? 0 };
     },
-    onSuccess: async () => {
+    onSuccess: async ({ xp }) => {
+      updateXP(xp);
       await queryClient.invalidateQueries({ queryKey: ["habits", session?.user.id] });
+      await queryClient.invalidateQueries({ queryKey: ["profile", session?.user.id] });
+      Alert.alert("Habit logged", `You earned +${HABIT_XP_REWARD} XP.`);
     },
     onError: (error) => Alert.alert("Unable to update", error.message)
   });
