@@ -3,7 +3,7 @@ import { View, Text, ScrollView } from "react-native";
 import { useSupabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/Card";
-import { moduleAccents } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 
 const levels = ["vision", "growth", "harvest"] as const;
 
@@ -11,6 +11,7 @@ type LevelKey = (typeof levels)[number];
 
 const TreeScreen: React.FC = () => {
   const { client, session } = useSupabase();
+  const { moduleAccents } = useThemeTokens();
 
   const goalsQuery = useQuery({
     queryKey: ["tree-goals", session?.user.id],

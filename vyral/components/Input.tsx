@@ -1,6 +1,6 @@
 import React from "react";
 import { TextInput, TextInputProps, View, Text } from "react-native";
-import { colors } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -8,6 +8,8 @@ interface InputProps extends TextInputProps {
 }
 
 export const Input: React.FC<InputProps> = ({ label, error, style, ...rest }) => {
+  const { colors } = useThemeTokens();
+
   return (
     <View className="mb-4">
       {label ? (
@@ -29,9 +31,9 @@ export const Input: React.FC<InputProps> = ({ label, error, style, ...rest }) =>
         }}
       >
         <TextInput
-          placeholderTextColor="rgba(248,251,255,0.5)"
+          placeholderTextColor={colors.text.secondary}
           className="text-base text-white"
-          style={[{ fontFamily: "Inter_400Regular" }, style]}
+          style={[{ fontFamily: "Inter_400Regular", color: colors.text.primary }, style]}
           {...rest}
         />
       </View>

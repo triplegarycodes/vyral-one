@@ -1,6 +1,6 @@
 import React from "react";
 import { Image, ImageProps, View } from "react-native";
-import { colors } from "@/theme/tokens";
+import { useThemeTokens } from "@/theme/ThemeProvider";
 
 interface AvatarProps extends Omit<ImageProps, "source"> {
   uri?: string | null;
@@ -8,6 +8,9 @@ interface AvatarProps extends Omit<ImageProps, "source"> {
 }
 
 export const Avatar: React.FC<AvatarProps> = ({ uri, size = 72, style, ...rest }) => {
+  const { colors } = useThemeTokens();
+  const accent = colors.neon.primary;
+
   return (
     <View
       style={{
@@ -15,10 +18,10 @@ export const Avatar: React.FC<AvatarProps> = ({ uri, size = 72, style, ...rest }
         height: size + 12,
         borderRadius: (size + 12) / 2,
         padding: 6,
-        backgroundColor: "rgba(0, 247, 255, 0.15)",
+        backgroundColor: `${accent}26`,
         justifyContent: "center",
         alignItems: "center",
-        shadowColor: colors.neon.blue,
+        shadowColor: accent,
         shadowOpacity: 0.4,
         shadowRadius: 16
       }}

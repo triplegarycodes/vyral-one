@@ -13,6 +13,8 @@ type Entry = {
   created_at: string;
   summary: string | null;
 };
+=======
+import { useThemeTokens } from "@/theme/ThemeProvider";
 
 const SkrybeScreen: React.FC = () => {
   const { client, session } = useSupabase();
@@ -20,6 +22,7 @@ const SkrybeScreen: React.FC = () => {
   const [content, setContent] = useState("");
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
 
+  const { moduleAccents, colors } = useThemeTokens();
   const entriesQuery = useQuery({
     queryKey: ["entries", session?.user.id],
     queryFn: async () => {
@@ -106,11 +109,11 @@ const SkrybeScreen: React.FC = () => {
           value={content}
           onChangeText={setContent}
           placeholder="Stream your consciousness..."
-          placeholderTextColor="rgba(255,255,255,0.5)"
+          placeholderTextColor={colors.text.secondary}
           style={{
             minHeight: 150,
             fontFamily: "Inter_400Regular",
-            color: "#fff",
+            color: colors.text.primary,
             textAlignVertical: "top"
           }}
         />
