@@ -1,59 +1,57 @@
-import React, { useEffect } from "react";
-import { View, Text, Image } from "react-native";
-import { Link, useRouter } from "expo-router";
-import { Button } from "@/components/Button";
-import { useThemeTokens } from "@/theme/ThemeProvider";
-import { useSupabase } from "@/lib/supabase";
+import React from 'react';
+import { FlatList, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
+import { GradientBackground } from '@/components/GradientBackground';
+import { ModuleCard } from '@/components/ModuleCard';
+import { palette } from '@/theme/tokens';
+import { useAuth } from '@/context/AuthContext';
 
-const OnboardingScreen: React.FC = () => {
-  const router = useRouter();
-  const { session } = useSupabase();
-  const { colors } = useThemeTokens();
+// To add a new module, drop a folder under /modules/<Name> with hooks/components,
+// then add a route in /app/(modules)/<slug>.tsx and register metadata in this list.
+const modules = [
+  { key: 'board', title: 'Board', description: 'Strategize missions and goals', accent: palette.accents.board },
+  { key: 'lyfe', title: 'Lyfe', description: 'Financial literacy quests', accent: palette.accents.lyfe },
+  { key: 'kor', title: 'Kor', description: 'Collaborative hub for crews', accent: palette.accents.kor },
+  { key: 'zone', title: 'Zone', description: 'Social lounge & chat', accent: palette.accents.zone },
+  { key: 'shop', title: 'Shop', description: 'Unlock items and boosts', accent: palette.accents.shop },
+  { key: 'skrybe', title: 'Skrybe', description: 'Creative writing lab', accent: palette.accents.skrybe },
+  { key: 'stryke', title: 'Stryke', description: 'Choice-driven life sim', accent: palette.accents.stryke },
+  { key: 'tree', title: 'Tree', description: 'Growth visualization', accent: palette.accents.tree },
+  { key: 'vyra', title: 'Vyra', description: 'Personal profile vault', accent: palette.accents.vyra }
+];
 
-  useEffect(() => {
-    if (session) {
-      router.replace("/kor");
-    }
-  }, [router, session]);
+const HomeScreen: React.FC = () => {
+  const { user } = useAuth();
 
   return (
-    <View className="flex-1 items-center justify-center px-8">
-      <View className="mb-12 items-center">
-        <Image
-          source={{ uri: "https://i.imgur.com/8Km9tLL.png" }}
-          style={{ width: 120, height: 120, marginBottom: 24, borderRadius: 60 }}
-        />
-        <Text className="text-4xl text-white" style={{ fontFamily: "SpaceGrotesk_700Bold" }}>
-          Vyral
-        </Text>
-        <Text
-          className="mt-4 text-center text-lg text-white/70"
-          style={{ fontFamily: "Inter_400Regular" }}
-        >
-          Enter the V’erse and amplify your flow.
-        </Text>
-      </View>
-      <View className="w-full" style={{ rowGap: 16 }}>
-        <Button
-          label="Login"
-          onPress={() => router.push("/auth/login")}
-          accentColor={colors.neon.primary}
-        />
-        <Button
-          label="Create Account"
-          onPress={() => router.push("/auth/signup")}
-          accentColor={colors.neon.secondary}
-        />
-      </View>
-      <Link
-        href="/auth/login"
-        className="mt-10 text-sm text-white/60"
-        style={{ fontFamily: "Inter_400Regular" }}
-      >
-        Continue with existing session
-      </Link>
-    </View>
+    <GradientBackground>
+      <FlatList
+        data={modules}
+        keyExtractor={(item) => item.key}
+        contentContainerStyle={styles.grid}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => {
+          const isLocked = !user && item.key !== 'board';
+          return (
+            <ModuleCard
+              title={item.title}
+              description={item.description}
+              accent={item.accent}
+              locked={isLocked}
+              onPress={() => router.push(`/(modules)/${item.key}`)}
+            />
+          );
+        }}
+      />
+    </GradientBackground>
   );
 };
 
-export default OnboardingScreen;
+const styles = StyleSheet.create({
+  grid: {
+    gap: 16,
+    paddingBottom: 48
+  }
+});
+
+export default HomeScreen;
