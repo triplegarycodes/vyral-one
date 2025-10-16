@@ -16,10 +16,7 @@ const defineConfig = (): ExpoConfig => ({
   experiments: {
     typedRoutes: true
   },
-  plugins: [
-    "expo-router",
-    ["nativewind/babel", { "isCJS": true }]
-  ],
+  plugins: ["expo-router"],
   extra: {
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? "",
     supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? ""
