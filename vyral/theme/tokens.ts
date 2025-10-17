@@ -12,7 +12,12 @@ export const palette = {
     skrybe: '#a855f7',
     stryke: '#fb7185',
     tree: '#4ade80',
-    vyra: '#22d3ee'
+    vyra: '#22d3ee',
+    pulse: '#0ea5e9',
+    studio: '#e879f9',
+    spotlight: '#f59e0b',
+    moneymoves: '#10b981',
+    lifelab: '#6366f1'
   }
 };
 

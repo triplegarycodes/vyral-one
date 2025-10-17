@@ -10,6 +10,11 @@ import { useAuth } from '@/context/AuthContext';
 // then add a route in /app/(modules)/<slug>.tsx and register metadata in this list.
 const modules = [
   { key: 'board', title: 'Board', description: 'Strategize missions and goals', accent: palette.accents.board },
+  { key: 'pulse', title: 'Pulse', description: 'Live social energy hub', accent: palette.accents.pulse },
+  { key: 'studio', title: 'Studio', description: 'Drop music, art, and remixes', accent: palette.accents.studio },
+  { key: 'spotlight', title: 'Spotlight', description: 'Share drops & get instant feedback', accent: palette.accents.spotlight },
+  { key: 'moneymoves', title: 'Money Moves', description: 'Level up your money confidence', accent: palette.accents.moneymoves },
+  { key: 'lifelab', title: 'Life Lab', description: 'Real-world skills & wellness boosts', accent: palette.accents.lifelab },
   { key: 'lyfe', title: 'Lyfe', description: 'Financial literacy quests', accent: palette.accents.lyfe },
   { key: 'kor', title: 'Kor', description: 'Collaborative hub for crews', accent: palette.accents.kor },
   { key: 'zone', title: 'Zone', description: 'Social lounge & chat', accent: palette.accents.zone },
