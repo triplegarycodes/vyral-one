@@ -4,6 +4,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { palette } from '@/theme/tokens';
+import {
+  FEATURED_MODULES,
+  LEARNING_TRACKS,
+  LIVE_SIGNALS,
+  QUICK_ACTIONS
+} from '@/modules/moduleRegistry';
 
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
@@ -11,31 +17,6 @@ const heroBadges = [
   { label: 'Day 21 streak', color: '#22d3ee' },
   { label: 'Crew online: 12', color: '#f472b6' },
   { label: 'XP boost active', color: '#facc15' }
-];
-
-const modules = [
-  { key: 'pulse', title: 'Pulse', blurb: 'Catch the latest drops', accent: palette.accents.pulse },
-  { key: 'studio', title: 'Studio', blurb: 'Create audio + visuals', accent: palette.accents.studio },
-  { key: 'spotlight', title: 'Spotlight', blurb: 'Flex your best moments', accent: palette.accents.spotlight },
-  { key: 'moneymoves', title: 'Money Moves', blurb: 'Cash quests & mini missions', accent: palette.accents.moneymoves },
-  { key: 'lifelab', title: 'Life Lab', blurb: 'Glow up your life hacks', accent: palette.accents.lifelab },
-  { key: 'board', title: 'Board', blurb: 'Squad goals dashboard', accent: palette.accents.board }
-];
-
-const quickActions = [
-  { title: 'Start a vibe check', emoji: '🌀', accent: '#38bdf8', action: () => router.push('/(modules)/pulse') },
-  { title: 'Drop new art', emoji: '🎨', accent: '#f472b6', action: () => router.push('/(modules)/studio') },
-  { title: 'Claim XP boost', emoji: '⚡️', accent: '#facc15', action: () => router.push('/(modules)/board') }
-];
-
-const learningTracks = [
-  { title: 'Money Myth Busters', progress: 0.4, accent: palette.accents.moneymoves },
-  { title: 'Micro-habit Stack', progress: 0.72, accent: palette.accents.lifelab }
-];
-
-const liveSignals = [
-  { title: 'Spotlight Showcase', time: 'Live now', accent: palette.accents.spotlight },
-  { title: 'Finance Sprint', time: 'Starts in 25m', accent: palette.accents.moneymoves }
 ];
 
 const Section = ({ title, caption, children, style }) => (
@@ -72,7 +53,7 @@ const ModuleCard = ({ item, delay }) => {
   return (
     <Animated.View style={[styles.moduleCard, { opacity, transform: [{ translateY: translate }] }]}>
       <Pressable
-        onPress={() => router.push(`/(modules)/${item.key}`)}
+        onPress={() => router.push(item.route)}
         style={({ pressed }) => [styles.modulePressable, pressed && styles.pressed]}
       >
         <LinearGradient
@@ -94,8 +75,11 @@ const ModuleCard = ({ item, delay }) => {
   );
 };
 
-const QuickAction = ({ action, accent, emoji, title }) => (
-  <Pressable onPress={action} style={({ pressed }) => [styles.quickAction, { borderColor: `${accent}40` }, pressed && styles.pressed]}>
+const QuickAction = ({ accent, emoji, route, title }) => (
+  <Pressable
+    onPress={() => router.push(route)}
+    style={({ pressed }) => [styles.quickAction, { borderColor: `${accent}40` }, pressed && styles.pressed]}
+  >
     <LinearGradient colors={[`${accent}33`, '#0f172a']} style={styles.quickActionGradient}>
       <Text style={[styles.quickActionEmoji, { textShadowColor: accent }]}>{emoji}</Text>
       <Text style={styles.quickActionTitle}>{title}</Text>
@@ -179,7 +163,7 @@ const HomeScreen = () => {
 
         <Section title="Jump back in" caption="Keep your streaks glowing">
           <FlatList
-            data={modules}
+            data={FEATURED_MODULES}
             keyExtractor={(item) => item.key}
             renderItem={({ item, index }) => <ModuleCard item={item} delay={index * 80} />}
             scrollEnabled={false}
@@ -188,24 +172,24 @@ const HomeScreen = () => {
 
         <Section title="Quick plays" caption="Launch a mission in seconds">
           <View style={styles.quickRow}>
-            {quickActions.map((action) => (
-              <QuickAction key={action.title} {...action} />
+            {QUICK_ACTIONS.map((action) => (
+              <QuickAction key={action.key} {...action} />
             ))}
           </View>
         </Section>
 
         <Section title="Skill sync" caption="You\'re halfway to new rewards">
           <View style={styles.trackColumn}>
-            {learningTracks.map((track) => (
-              <LearningTrack key={track.title} {...track} />
+            {LEARNING_TRACKS.map((track) => (
+              <LearningTrack key={track.key} {...track} />
             ))}
           </View>
         </Section>
 
         <Section title="Live signals" caption="What\'s buzzing now">
           <View style={styles.signalColumn}>
-            {liveSignals.map((signal) => (
-              <LiveSignal key={signal.title} {...signal} />
+            {LIVE_SIGNALS.map((signal) => (
+              <LiveSignal key={signal.key} {...signal} />
             ))}
           </View>
         </Section>
