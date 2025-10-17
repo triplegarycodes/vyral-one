@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+=======
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { palette } from '@/theme/tokens';
@@ -45,6 +46,7 @@ const phases = [
   }
 ];
 
+
 export const LoadingScreen: React.FC = () => {
   const rotation = useRef(new Animated.Value(0)).current;
   const pulse = useRef(new Animated.Value(0)).current;
@@ -58,6 +60,9 @@ export const LoadingScreen: React.FC = () => {
   const [progress, setProgress] = useState(12);
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [clock, setClock] = useState(() => new Date());
+  const tipOpacity = useRef(new Animated.Value(1)).current;
+  const [tipIndex, setTipIndex] = useState(0);
+  const [progress, setProgress] = useState(12);
   const progressAnim = useRef(new Animated.Value(progress)).current;
 
   useEffect(() => {
@@ -179,6 +184,10 @@ export const LoadingScreen: React.FC = () => {
         const noise = Math.random() * 3;
         const next = prev + increment + noise;
         return next >= 99 ? 34 + Math.random() * 4 : next;
+=======
+        const increment = 6 + Math.random() * 12;
+        const next = prev + increment;
+        return next >= 98 ? 28 : next;
       });
     }, 1700);
 
@@ -284,6 +293,7 @@ export const LoadingScreen: React.FC = () => {
   const clockString = useMemo(() => {
     return clock.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }, [clock]);
+  const progressDisplay = Math.min(99, Math.round(progress));
 
   return (
     <View style={styles.container}>
@@ -362,6 +372,10 @@ export const LoadingScreen: React.FC = () => {
           <Text style={styles.hudLabel}>Vyral uplink</Text>
           <Text style={styles.hudValue}>{clockString} • phase {phaseIndex + 1}/5</Text>
         </View>
+
+      <View style={styles.badge}>
+        <View style={styles.badgeDot} />
+        <Text style={styles.badgeText}>calibrating hype engines</Text>
       </View>
 
       <View style={styles.content}>
@@ -396,7 +410,7 @@ export const LoadingScreen: React.FC = () => {
               pointerEvents="none"
               style={[styles.progressScanner, { transform: [{ translateX: scanTranslate }] }]}
             />
-          </View>
+            </View>
           <View style={styles.progressMeta}>
             <Text style={styles.metaLabel}>syncing vibe decks</Text>
             <Text style={styles.metaValue}>{progressDisplay}%</Text>
@@ -470,6 +484,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden'
   },
   auroraSecondary: {
+  },
+  aurora: {
     position: 'absolute',
     width: 420,
     height: 420,
@@ -526,6 +542,49 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.85,
     shadowRadius: 10
+    top: -180,
+    right: -120,
+    opacity: 0.55,
+    overflow: 'hidden'
+  },
+  auroraSecondary: {
+    position: 'absolute',
+    width: 420,
+    height: 420,
+    borderRadius: 240,
+    bottom: -160,
+    left: -160,
+    overflow: 'hidden'
+  },
+  badge: {
+    position: 'absolute',
+    top: 68,
+    right: 32,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(15,23,42,0.65)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(148,163,184,0.4)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  badgeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: palette.accents.vyra,
+    shadowColor: palette.accents.vyra,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 8
+  },
+  badgeText: {
+    color: palette.textSecondary,
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: 'uppercase'
   },
   logoAura: {
     position: 'absolute',
@@ -722,7 +781,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
     color: 'rgba(148,163,184,0.75)',
     fontSize: 12,
-    lineHeight: 18
-  }
+    lineHeight: 18  }
 });
 
